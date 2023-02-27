@@ -1,11 +1,12 @@
 ## CRON job (crontab -e):
 # */5 * * * * /root/interface_monitor.sh
-
+####################################################
 #!/bin/bash
-
 OUTPUT_DIR="/root/bandwidth_interface"
 DAYS_TO_KEEP=30
 INTERVAL=300 # 5 minutes
+DNSNAME='6000257'
+SERVER_URL="210.23.11.106:3000/bandwidth_interface" 
 
 # # Prevent multiple instance
 # SCRIPT_LOCK="$OUTPUT_DIR/.lock"
@@ -28,6 +29,23 @@ NETWORK_INTERFACE=$(ip route get 8.8.8.8 | awk 'NR==2 {print $1}' RS="dev")
 if [ ! -d $OUTPUT_DIR ]; then
     mkdir -p -m 755 $OUTPUT_DIR
 fi
+
+# Calculate the number of seconds until the next five-minute interval
+sleep_time=$(( INTERVAL - $(date +%s) % INTERVAL ))
+
+# Start of transmit 
+tx1=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
+
+# Wait until the next five-minute interval
+#echo "$(date +%Y-%m-%d %H:%M:%S) - Waiting $sleep_time seconds until the next interval..."
+if [ $sleep_time -gt 0 ]; then
+    sleep $sleep_time
+fi
+
+# End of transmit 
+tx2=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
+tx_bytes=$(($tx2-$tx1))
+
 OUTPUT_DIR=$OUTPUT_DIR/$(date +%Y-%m)
 if [ ! -d $OUTPUT_DIR ]; then
     mkdir -p -m 755 $OUTPUT_DIR
@@ -37,27 +55,17 @@ fi
 filename=$(date +%Y%m%d)_tx.log
 output_file=$OUTPUT_DIR/$filename
 
-# Calculate the number of seconds until the next five-minute interval
-now=$(date +%s)
-sleep_time=$(( INTERVAL - now % INTERVAL ))
-
-# Start of transmit 
-tx1=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
-
-# Wait until the next five-minute interval
-#echo "Waiting $sleep_time seconds until the next interval..."
-sleep $sleep_time
-
-# End of transmit 
-tx2=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
-tx_bytes=$(($tx2-$tx1))
-
 # Output bytes transmiatted to a file
-echo "$(date +%Y-%m-%d %H:%M:%S) $tx_bytes" >> $output_file
+echo "$(date +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
+
+# Send data to the server
+curl -X POST $SERVER_URL \
+  -H 'Content-Type: application/json' \
+  -d "{\"timestamp\": \"$(date +%s)\", \"devicename\": \"$(hostname)\", \"ddns\": \"$DNSNAME\", \"txbytes\": $tx_bytes}"
 
 # Find files older than the specified number of days and delete them
 if find "$OUTPUT_DIR" -type f -mtime +"$DAYS_TO_KEEP" -delete -print; then
-    echo "Deleted log files older than 30 days."
+    echo "$(date +%Y-%m-%d_%H:%M:%S) - Deleted log files older than 30 days."
 fi
 # done
 
