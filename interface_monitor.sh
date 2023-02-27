@@ -1,5 +1,5 @@
-## CRON job (/etc/crontab):
-# */5 * * * * root /root/interface_monitor.sh
+## CRON job (cron -e):
+# */5 * * * * /root/interface_monitor.sh
 
 #!/bin/bash
 
@@ -28,7 +28,7 @@ NETWORK_INTERFACE=$(ip route get 8.8.8.8 | awk 'NR==2 {print $1}' RS="dev")
 if [ ! -d $OUTPUT_DIR ]; then
     mkdir -p -m 755 $OUTPUT_DIR
 fi
-OUTPUT_DIR=$OUTPUT_DIR/$(date +%Y%m)
+OUTPUT_DIR=$OUTPUT_DIR/$(date +%Y-%m)
 if [ ! -d $OUTPUT_DIR ]; then
     mkdir -p -m 755 $OUTPUT_DIR
 fi
@@ -45,12 +45,12 @@ sleep_time=$(( INTERVAL - now % INTERVAL ))
 tx1=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
 
 # Wait until the next five-minute interval
-echo "Waiting $sleep_time seconds until the next interval..."
+#echo "Waiting $sleep_time seconds until the next interval..."
 sleep $sleep_time
 
 # End of transmit 
 tx2=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
-tx_bytes=$(expr $tx2 - $tx1)
+tx_bytes=$(($tx2-$tx1))
 
 # Output bytes transmiatted to a file
 echo "$(date +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
