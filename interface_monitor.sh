@@ -34,7 +34,7 @@ if [ ! -d $OUTPUT_DIR ]; then
 fi
 
 # Generate a unique filename based on the current timestamp
-filename=$(date +%Y%m%d)_ifconfig.log
+filename=$(date +%Y%m%d)_tx.log
 output_file=$OUTPUT_DIR/$filename
 
 # Calculate the number of seconds until the next five-minute interval
@@ -53,7 +53,7 @@ tx2=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
 tx_bytes=$(($tx2-$tx1))
 
 # Output bytes transmiatted to a file
-echo "$(date +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
+echo "$(date +%Y-%m-%d %H:%M:%S) $tx_bytes" >> $output_file
 
 # Find files older than the specified number of days and delete them
 if find "$OUTPUT_DIR" -type f -mtime +"$DAYS_TO_KEEP" -delete -print; then
