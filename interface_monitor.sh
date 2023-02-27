@@ -1,4 +1,4 @@
-## CRON job (cron -e):
+## CRON job (crontab -e):
 # */5 * * * * /root/interface_monitor.sh
 
 #!/bin/bash
