@@ -6,7 +6,7 @@ OUTPUT_DIR="/root/bandwidth_interface"
 DAYS_TO_KEEP=30
 INTERVAL=300 # 5 minutes
 DNSNAME='6000257'
-SERVER_URL="210.23.11.106:3000/bandwidth_interface" 
+SERVER_URL="http://210.23.11.106:3000/bandwidth_interface" 
 
 # # Prevent multiple instance
 # SCRIPT_LOCK="$OUTPUT_DIR/.lock"
@@ -59,9 +59,9 @@ output_file=$OUTPUT_DIR/$filename
 echo "$(date +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
 
 # Send data to the server
-curl -X POST $SERVER_URL \
+curl -v -X POST $SERVER_URL \
   -H 'Content-Type: application/json' \
-  -d "{\"timestamp\": \"$(date +%s)\", \"devicename\": \"$(hostname)\", \"ddns\": \"$DNSNAME\", \"txbytes\": $tx_bytes}"
+  -d "{\"timestamp\": $(date +%s), \"devicename\": \"$(hostname)\", \"ddns\": \"$DNSNAME\", \"txbytes\": $tx_bytes}"
 
 # Find files older than the specified number of days and delete them
 if find "$OUTPUT_DIR" -type f -mtime +"$DAYS_TO_KEEP" -delete -print; then
