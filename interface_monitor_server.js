@@ -15,17 +15,14 @@ const baseDirectory = "/root/icdn-bandwidth_interface"; // Replace with your des
 app.post("/bandwidth_interface", async (req, res) => {
   try {
     console.log(`Received:`+ req);
-    
-    const { stamp, devicename, ddns, txbytes } = req.body;  
-    
-    const timestamp = new Date(parseInt(stamp) * 1000);
-    // Get the year, month, and date from the date object
-    const year = timestamp.getFullYear();
-    const month = String(timestamp.getMonth() + 1).padStart(2, "0"); // Month is 0-indexed, so add 1 and pad with 0 if needed
-    const day = String(timestamp.getDate()).padStart(2, "0");
-    const yearMonth = `${year}-${month}`;
-    const yearMonthDate = `${year}-${month}-${day}`;
 
+    const { timestamp, devicename, ddns, txbytes } = req.body;  
+    
+    const new_timestamp = new Date;
+    new_timestamp.setTime(parseInt(timestamp)*1000);
+    // Get the year, month, and date from the date object
+    const yearMonth = new_timestamp.toISOString().slice(0, 7);
+    const yearMonthDate = new_timestamp.toISOString().slice(0, 10);
     // Create the directory if it doesn"t exist
     const deviceDirectory = path.join(baseDirectory, ddns+"_"+devicename, yearMonth);
     if (!fs.existsSync(deviceDirectory)) {
@@ -37,7 +34,7 @@ app.post("/bandwidth_interface", async (req, res) => {
     const filePath = path.join(deviceDirectory, filename);
 
     // Append the data to the file
-    fs.appendFileSync(filePath, `${timestamp} ${ddns} ${devicename} ${txbytes}\n`);
+    fs.appendFileSync(filePath, `${new_timestamp.toISOString().replace("T","_").replace("Z","")} ${ddns} ${devicename} ${txbytes}\n`);
     
     res.sendStatus(200);
   } catch (error) {
