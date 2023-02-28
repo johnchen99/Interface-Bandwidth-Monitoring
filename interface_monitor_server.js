@@ -34,7 +34,7 @@ app.post("/bandwidth_interface", async (req, res) => {
     const filePath = path.join(deviceDirectory, filename);
 
     // Append the data to the file
-    fs.appendFileSync(filePath, `${new_timestamp.toISOString().replace("T","_").replace("Z","")} ${ddns} ${devicename} ${txbytes}\n`);
+    fs.appendFileSync(filePath, `${new_timestamp.toISOString().replace("T","_").slice(0, -5)} ${ddns} ${devicename} ${txbytes}\n`);
     
     res.sendStatus(200);
   } catch (error) {
