@@ -43,8 +43,8 @@ for FOLDER_PATH in $( find $OUTPUT_DIR -mindepth 1 -maxdepth 1 -type d); do
     # Output the result
     echo ""
     echo "95th percentile: $PERCENTILE_VALUE"
-    echo ""
     echo "${PERCENTILE_VALUE}" > "$FOLDER_PATH/${PREV_MONTH}/${PREV_MONTH}_95th_percentile.txt"
+    echo ""
     echo ""
     echo "File output to: $FOLDER_PATH/${PREV_MONTH}/${PREV_MONTH}_95th_percentile.txt"
 done 
