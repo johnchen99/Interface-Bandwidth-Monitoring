@@ -2,7 +2,6 @@
 //run on PM2
 
 const express = require("express");
-const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const port = 3000;
@@ -14,10 +13,8 @@ const baseDirectory = "/root/icdn-bandwidth_interface"; // Replace with your des
 // Endpoint to receive data from the client
 app.post("/bandwidth_interface", async (req, res) => {
   try {
-    console.log(`Received:`+ req);
-
     const { timestamp, devicename, ddns, txbytes } = req.body;  
-    
+    console.log(`Received: `+ timestamp + devicename + " " + ddns + " " + txbytes);
     const new_timestamp = new Date;
     new_timestamp.setTime(parseInt(timestamp)*1000);
     // Get the year, month, and date from the date object
@@ -43,6 +40,6 @@ app.post("/bandwidth_interface", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server listening on port ${port}.`);
 });
