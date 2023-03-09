@@ -1,11 +1,12 @@
 ## CRON job (crontab -e):
+#PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # */5 * * * * /root/interface_monitor.sh
 ####################################################
 #!/bin/bash
 OUTPUT_DIR="/root/bandwidth_interface"
 DAYS_TO_KEEP=30
 INTERVAL=300 # 5 minutes
-DNSNAME='6000257'
+DNSNAME=$(awk 'NR==3' /etc/init.d/icdnddns.sh | cut -d "=" -f2 | cut -d "'" -f2)
 SERVER_URL="http://210.23.11.106:3000/bandwidth_interface" 
 
 # # Prevent multiple instance
