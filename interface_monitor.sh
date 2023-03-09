@@ -31,13 +31,13 @@ if [ ! -d $OUTPUT_DIR ]; then
 fi
 
 # Calculate the number of seconds until the next five-minute interval
-sleep_time=$(( INTERVAL - $(date +%s) % INTERVAL ))
+sleep_time=$(( INTERVAL - $(date -u +%s) % INTERVAL ))
 
 # Start of transmit 
 tx1=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
 
 # Wait until the next five-minute interval
-#echo "$(date +%Y-%m-%d %H:%M:%S) - Waiting $sleep_time seconds until the next interval..."
+#echo "$(date -u +%Y-%m-%d %H:%M:%S) - Waiting $sleep_time seconds until the next interval..."
 if [ $sleep_time -gt 0 ]; then
     sleep $sleep_time
 fi
@@ -46,26 +46,26 @@ fi
 tx2=$(ifconfig $NETWORK_INTERFACE | awk '/TX packets/{print $5}')
 tx_bytes=$(($tx2-$tx1))
 
-OUTPUT_DIR=$OUTPUT_DIR/$(date +%Y-%m)
+OUTPUT_DIR=$OUTPUT_DIR/$(date -u +%Y-%m)
 if [ ! -d $OUTPUT_DIR ]; then
     mkdir -p -m 755 $OUTPUT_DIR
 fi
 
 # Generate a unique filename based on the current timestamp
-filename=$(date +%Y%m%d)_tx.log
+filename=$(date -u +%Y%m%d)_tx.log
 output_file=$OUTPUT_DIR/$filename
 
 # Output bytes transmiatted to a file
-echo "$(date +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
+echo "$(date -u +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
 
 # Send data to the server
 curl -v -X POST $SERVER_URL \
   -H 'Content-Type: application/json' \
-  -d "{\"timestamp\": $(date +%s), \"devicename\": \"$(hostname)\", \"ddns\": \"$DNSNAME\", \"txbytes\": $tx_bytes}"
+  -d "{\"timestamp\": $(date -u +%s), \"devicename\": \"$(hostname)\", \"ddns\": \"$DNSNAME\", \"txbytes\": $tx_bytes}"
 
 # Find files older than the specified number of days and delete them
 if find "$OUTPUT_DIR" -type f -mtime +"$DAYS_TO_KEEP" -delete -print; then
-    echo "$(date +%Y-%m-%d_%H:%M:%S) - Deleted log files older than 30 days."
+    echo "$(date -u +%Y-%m-%d_%H:%M:%S) - Deleted log files older than 30 days."
 fi
 # done
 
