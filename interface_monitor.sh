@@ -61,7 +61,7 @@ echo "$(TZ=Asia/Singapore date +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
 
 # Send data to the server
 counter=0
-max_attempts=42 # Max 3.5 minutes
+max_attempts=54 # Max 4.5 minutes
 while [ $counter -lt $max_attempts ]; do
     if curl -v -X POST $SERVER_URL \
         -H 'Content-Type: application/json' \
