@@ -60,9 +60,20 @@ output_file=$OUTPUT_DIR/$filename
 echo "$(TZ=Asia/Singapore date +%Y-%m-%d_%H:%M:%S) $tx_bytes" >> $output_file
 
 # Send data to the server
-curl -v -X POST $SERVER_URL \
-  -H 'Content-Type: application/json' \
-  -d "{\"timestamp\": $(TZ=Asia/Singapore date +%s), \"devicename\": \"$(hostname)\", \"ddns\": \"$DNSNAME\", \"txbytes\": $tx_bytes}"
+counter=0
+max_attempts=42 # Max 3.5 minutes
+while [ $counter -lt $max_attempts ]; do
+    if curl -v -X POST $SERVER_URL \
+        -H 'Content-Type: application/json' \
+        -d "{\"timestamp\": $(TZ=Asia/Singapore date +%s), \"devicename\": \"$(hostname)\", \"ddns\": \"$DNSNAME\", \"txbytes\": $tx_bytes}"
+    then
+        break
+    else
+        echo "POST request to $SERVER_URL failed. Retrying in 5 seconds..."
+        sleep 5
+        counter=$((counter+1))
+    fi
+done
 
 # Find files older than the specified number of days and delete them
 if find "$OUTPUT_DIR" -type f -mtime +"$DAYS_TO_KEEP" -delete -print; then
